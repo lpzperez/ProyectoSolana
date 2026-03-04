@@ -1,0 +1,81 @@
+Tienda de Videojuegos en Solana con Rust y Anchor 
+Descripción
+Este programa permite gestionar una tienda de videojuegos descentralizada en la blockchain de Solana. 
+Utiliza el framework Anchor para definir la lógica de negocio, permitiendo a un propietario (owner) 
+administrar un inventario de juegos mediante una cuenta de programa (PDA).
+
+Instrucciones de uso
+Funciones del Programa (lib.rs)
+crear_tienda Inicializa una nueva tienda vinculada a la clave pública del usuario. 
+Utiliza un PDA (Program Derived Address) para asegurar que cada usuario tenga su propia tienda única.
+
+Rust
+pub fn crear_tienda(context: Context<NuevaTienda>, nombre: String) -> Result<()> { ... }
+agregar_videojuego Añade un nuevo título al inventario. Requiere detalles como título, versión, 
+precio, categoría y stock. Solo el propietario puede ejecutar esta acción.
+
+Rust
+pub fn agregar_videojuego(context: Context<NuevoVideojuego>, titulo: String, ...) -> Result<()> { ... }
+modificar_videojuego Permite actualizar el precio y el stock de un videojuego existente buscando por su título.
+
+Rust
+pub fn modificar_videojuego(context: Context<NuevoVideojuego>, titulo: String, nuevo_precio: u64, nuevo_stock: u16) -> Result<()> { ... }
+eliminar_videojuego Elimina permanentemente un videojuego del vector de inventario de la tienda.
+
+Rust
+pub fn eliminar_videojuego(context: Context<NuevoVideojuego>, titulo: String) -> Result<()> { ... }
+alternar_disponibilidad Cambia el estado booleano de disponibilidad (disponible/no disponible) de un juego específico.
+
+ver_videojuegos Genera logs detallados en la consola de Solana con la lista completa de juegos y sus atributos actuales.
+
+Estructuras de Datos
+Tienda: Cuenta principal que almacena el owner (Pubkey), el nombre de la tienda y un Vec<Videojuego> 
+que actúa como base de datos dinámica.
+
+Videojuego: Estructura de datos que contiene:
+titulo (Max 40 caracteres)
+version (Max 20 caracteres)
+precio (u64)
+categoria (Max 40 caracteres)
+stock (u16)
+disponible (bool)
+
+Seguridad y Validaciones
+Cuentas (Contextos)
+NuevaTienda: Implementa init_if_needed y calcula el espacio necesario usando InitSpace. 
+El PDA se deriva de la semilla estática "tienda" y la llave del owner.
+
+NuevoVideojuego: Valida que quien firma la transacción sea el propietario legítimo de la cuenta de la tienda 
+mediante la instrucción require!.
+
+Errores Personalizados
+NoEresElOwner: Se dispara si un usuario intenta modificar una tienda que no le pertenece.
+
+VideojuegoNoExiste: Se lanza cuando se intenta modificar o eliminar un título que no se encuentra en el inventario.
+
+Tests (anchor.test.ts)
+El script de pruebas incluido realiza las siguientes validaciones:
+
+Derivación de PDA: Calcula la dirección de la tienda antes de la llamada.
+
+Inicialización: Llama a crearTienda con el nombre "Game4Life".
+
+Confirmación de Transacción: Asegura que la operación se procese en la red (o localledger).
+
+Verificación de Datos: Realiza un fetch de la cuenta creada y compara que el nombre y el owner coincidan con los esperados.
+
+Formateo de Datos: Mapea los tipos BN (Big Number) de los precios a strings legibles para el reporte en consola.
+
+Requisitos de Instalación
+Rust & Cargo
+
+Solana CLI & Anchor Framework
+
+Node.js & Yarn/NPM
+
+Para ejecutar el proyecto, simplemente usa:
+
+anchor build
+anchor test
+
+anchor test
